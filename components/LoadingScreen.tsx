@@ -35,7 +35,7 @@ export default function LoadingScreen() {
   return (
     <div className={`cd-loader ${exiting ? "cd-loader-exit" : ""}`}>
       <div className="cd-loader-inner">
-        <div className="cd-eyebrow">Anthropic Labs · Claude Design</div>
+        <div className="cd-eyebrow">Autoreason · tournament harness</div>
 
         <div className="cd-caduceus">
           {/* Drawn-in caduceus — paths animate via stroke-dasharray */}
