@@ -28,7 +28,7 @@ what keep weak models from scope-creeping or hallucinating flaws.
 ```bash
 npm install
 cp .env.example .env.local
-# edit .env.local — set ANTHROPIC_API_KEY
+# edit .env.local — set OPENROUTER_API_KEY
 npm run dev
 ```
 
@@ -38,12 +38,13 @@ Open <http://localhost:3000>.
 
 | env var | default | meaning |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | — | required |
+| `OPENROUTER_API_KEY` | — | required (https://openrouter.ai/keys) |
+| `OPENROUTER_MODEL` | `anthropic/claude-sonnet-4.5` | any OpenRouter model id |
 | `RATE_LIMIT_PER_DAY` | `3` | runs allowed per client IP per 24h |
 
-The default model is `claude-sonnet-4-6`, matching the autoreason paper's
-methodology for writing tasks. To swap models, edit `DEFAULT_MODEL` in
-[`lib/tournament.ts`](./lib/tournament.ts).
+Inference goes through OpenRouter so you can swap models freely — try
+`openai/gpt-4o`, `google/gemini-2.5-pro`, `meta-llama/llama-3.3-70b-instruct`,
+etc. without changing code.
 
 ### Cost note
 
@@ -54,7 +55,7 @@ in-memory rate limiter caps daily runs per IP to keep things bounded.
 ## Stack
 
 - Next.js 16 App Router (Node runtime, SSE via `ReadableStream`)
-- `@anthropic-ai/sdk` for streaming completions
+- `openai` SDK pointed at `https://openrouter.ai/api/v1` for streaming completions
 - Tailwind v4 + a deliberately stark monochrome aesthetic
 - In-memory IP rate limit — replace with Redis/Upstash if you ever scale past one instance
 

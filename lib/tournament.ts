@@ -1,4 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 import {
   AUTHOR_SYSTEM,
   CRITIC_SYSTEM,
@@ -15,59 +15,69 @@ import type { Phase, Role, StreamEvent } from "./types";
 
 type Emit = (event: StreamEvent) => void;
 
-const DEFAULT_MODEL = "claude-sonnet-4-6";
+const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 const MAX_TOKENS_AUTHOR = 2048;
 const MAX_TOKENS_CRITIC = 1024;
 const MAX_TOKENS_JUDGE = 256;
 
+function makeClient(apiKey: string): OpenAI {
+  return new OpenAI({
+    apiKey,
+    baseURL: OPENROUTER_BASE_URL,
+    defaultHeaders: {
+      // OpenRouter optional analytics headers — identifies the app on their dashboard.
+      "HTTP-Referer": "https://github.com/ctrlshifthash/Schlooms",
+      "X-Title": "Schlooms - autoreason console",
+    },
+  });
+}
+
 async function streamCompletion(
-  client: Anthropic,
+  client: OpenAI,
   model: string,
   system: string,
   userPrompt: string,
   maxTokens: number,
   onToken: (t: string) => void,
 ): Promise<string> {
-  const stream = client.messages.stream({
+  const stream = await client.chat.completions.create({
     model,
     max_tokens: maxTokens,
-    system,
-    messages: [{ role: "user", content: userPrompt }],
+    stream: true,
+    messages: [
+      { role: "system", content: system },
+      { role: "user", content: userPrompt },
+    ],
   });
-  for await (const event of stream) {
-    if (
-      event.type === "content_block_delta" &&
-      event.delta.type === "text_delta"
-    ) {
-      onToken(event.delta.text);
+
+  let full = "";
+  for await (const chunk of stream) {
+    const delta = chunk.choices?.[0]?.delta?.content ?? "";
+    if (delta) {
+      full += delta;
+      onToken(delta);
     }
   }
-  const final = await stream.finalMessage();
-  let text = "";
-  for (const block of final.content) {
-    if (block.type === "text") text += block.text;
-  }
-  return text;
+  return full;
 }
 
 async function getJudgeRanking(
-  client: Anthropic,
+  client: OpenAI,
   model: string,
   task: string,
   a: string,
   b: string,
   ab: string,
 ): Promise<{ ranking: Role[]; reason: string }> {
-  const response = await client.messages.create({
+  const response = await client.chat.completions.create({
     model,
     max_tokens: MAX_TOKENS_JUDGE,
-    system: JUDGE_SYSTEM,
-    messages: [{ role: "user", content: JUDGE_PROMPT(task, a, b, ab) }],
+    messages: [
+      { role: "system", content: JUDGE_SYSTEM },
+      { role: "user", content: JUDGE_PROMPT(task, a, b, ab) },
+    ],
   });
-  const text = response.content
-    .filter((b): b is Anthropic.TextBlock => b.type === "text")
-    .map((b) => b.text)
-    .join("");
+  const text = response.choices?.[0]?.message?.content ?? "";
 
   const match = text.match(/\{[\s\S]*\}/);
   if (!match) {
@@ -114,11 +124,12 @@ export interface RunOptions {
   numJudges?: number;
   model?: string;
   apiKey: string;
+  defaultModel: string;
 }
 
 export async function runTournament(opts: RunOptions, emit: Emit): Promise<void> {
-  const client = new Anthropic({ apiKey: opts.apiKey });
-  const model = opts.model ?? DEFAULT_MODEL;
+  const client = makeClient(opts.apiKey);
+  const model = opts.model ?? opts.defaultModel;
   const maxPasses = Math.min(Math.max(opts.maxPasses ?? 3, 1), 5);
   const numJudges = Math.min(Math.max(opts.numJudges ?? 3, 1), 5);
 
@@ -129,7 +140,6 @@ export async function runTournament(opts: RunOptions, emit: Emit): Promise<void>
   const phaseDone = (pass: number, phase: Phase, content: string) =>
     emit({ type: "phase_done", pass, phase, content });
 
-  // Pass 0 — generate initial A. We treat this as a half-pass and label it pass 1's author phase.
   emit({ type: "pass_start", pass: 1 });
   phaseStart(1, "author", "Author drafts version A");
   let versionA = await streamCompletion(
@@ -148,7 +158,6 @@ export async function runTournament(opts: RunOptions, emit: Emit): Promise<void>
   for (let pass = 1; pass <= maxPasses; pass++) {
     if (pass > 1) emit({ type: "pass_start", pass });
 
-    // Critic
     phaseStart(pass, "critic", "Critic finds flaws");
     const critique = await streamCompletion(
       client,
@@ -160,7 +169,6 @@ export async function runTournament(opts: RunOptions, emit: Emit): Promise<void>
     );
     phaseDone(pass, "critic", critique);
 
-    // Author B
     phaseStart(pass, "authorB", "Reviser writes B");
     const versionB = await streamCompletion(
       client,
@@ -172,7 +180,6 @@ export async function runTournament(opts: RunOptions, emit: Emit): Promise<void>
     );
     phaseDone(pass, "authorB", versionB);
 
-    // Synthesizer
     phaseStart(pass, "synth", "Synthesizer fuses A and B into AB");
     const versionAB = await streamCompletion(
       client,
@@ -184,7 +191,6 @@ export async function runTournament(opts: RunOptions, emit: Emit): Promise<void>
     );
     phaseDone(pass, "synth", versionAB);
 
-    // Judges (parallel)
     phaseStart(pass, "judges", `${numJudges} judges rank A, B, AB`);
     const judgePromises = Array.from({ length: numJudges }, (_, i) =>
       getJudgeRanking(client, model, opts.task, versionA, versionB, versionAB).then(

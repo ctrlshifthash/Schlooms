@@ -23,7 +23,11 @@ export default function Home() {
               </span>
               <span className="meta-pill">
                 <span className="text-fg-faint">M—</span>
-                <span className="text-fg">claude-sonnet-4-6</span>
+                <span className="text-fg">claude-sonnet-4.5</span>
+              </span>
+              <span className="meta-pill">
+                <span className="text-fg-faint">VIA—</span>
+                <span className="text-copper">openrouter</span>
               </span>
               <a
                 href="https://github.com/NousResearch/autoreason"
@@ -165,7 +169,7 @@ export default function Home() {
               </div>
               <div>
                 <span className="text-fg-faint">inference · </span>
-                <span className="text-fg">Anthropic API, streamed</span>
+                <span className="text-fg">OpenRouter, streamed</span>
               </div>
             </div>
           </div>

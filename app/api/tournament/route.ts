@@ -8,6 +8,7 @@ export const maxDuration = 300;
 
 const RATE_WINDOW_MS = 24 * 60 * 60 * 1000;
 const RATE_MAX_HITS = parseInt(process.env.RATE_LIMIT_PER_DAY ?? "3", 10);
+const DEFAULT_MODEL = process.env.OPENROUTER_MODEL ?? "anthropic/claude-sonnet-4.5";
 
 function getClientIP(req: NextRequest): string {
   const xff = req.headers.get("x-forwarded-for");
@@ -18,10 +19,10 @@ function getClientIP(req: NextRequest): string {
 }
 
 export async function POST(req: NextRequest): Promise<Response> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
     return new Response(
-      JSON.stringify({ error: "ANTHROPIC_API_KEY not configured" }),
+      JSON.stringify({ error: "OPENROUTER_API_KEY not configured" }),
       { status: 500, headers: { "Content-Type": "application/json" } },
     );
   }
@@ -77,6 +78,7 @@ export async function POST(req: NextRequest): Promise<Response> {
             numJudges: body.numJudges,
             model: body.model,
             apiKey,
+            defaultModel: DEFAULT_MODEL,
           },
           send,
         );
