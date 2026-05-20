@@ -603,33 +603,15 @@ textarea:focus {
   color: var(--copper);
   margin-bottom: 2.5rem;
   opacity: 0;
-  animation: cd-caduceus-in 800ms ease forwards;
+  transform: scale(0.85);
+  animation: cd-caduceus-in 1100ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
   animation-delay: 200ms;
-  filter: drop-shadow(0 0 12px rgba(210, 138, 74, 0.35));
-}
-.cd-caduceus svg path,
-.cd-caduceus svg line,
-.cd-caduceus svg circle {
-  stroke: currentColor;
-  fill: none;
-  stroke-dasharray: 200;
-  stroke-dashoffset: 200;
-  animation: cd-draw 1500ms ease forwards;
-  animation-delay: 300ms;
-}
-.cd-caduceus svg circle[data-fill="1"] {
-  fill: currentColor;
-  stroke: none;
-  animation: cd-fade-in 500ms ease forwards;
-  animation-delay: 1500ms;
-  opacity: 0;
-}
-@keyframes cd-draw {
-  to { stroke-dashoffset: 0; }
+  filter: drop-shadow(0 0 18px rgba(210, 138, 74, 0.55));
 }
 @keyframes cd-caduceus-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  0%   { opacity: 0; transform: scale(0.85) translateY(8px); }
+  60%  { opacity: 1; transform: scale(1.04) translateY(0); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 .cd-wordmark {
