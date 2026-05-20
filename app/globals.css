@@ -1,123 +1,499 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #ffffff;
-  --ink: #000000;
-  --ink-50: rgba(0, 0, 0, 0.5);
-  --ink-20: rgba(0, 0, 0, 0.18);
-  --ink-08: rgba(0, 0, 0, 0.08);
-  --hl: #fff200;
+  /* Deep night, faintly warm — like a Hermes Agent operations dossier under a desk lamp. */
+  --bg: #08070a;
+  --bg-2: #110d11;
+  --bg-3: #1a141a;
+  --panel: #15101a;
+  --panel-edge: #2f2538;
+  --panel-edge-2: #3f3145;
+
+  /* Foreground: warm parchment. */
+  --fg: #f4ead7;
+  --fg-dim: #a89c84;
+  --fg-faint: #5f5648;
+
+  /* Hermes copper / bronze — the brand. */
+  --copper: #d28a4a;
+  --copper-bright: #f0bc7c;
+  --copper-deep: #6a3f12;
+
+  /* Gold flourish — used sparingly for verdict / converged. */
+  --gold: #f5cd5a;
+
+  /* Phosphor — live data, "telemetry coming in." */
+  --phosphor: #7fe5d8;
+  --phosphor-dim: #2a6a64;
+
+  /* Refusal / crash. */
+  --crimson: #e8485a;
+
+  /* Imperial purple — sparing accent for the wordmark backdrop. */
+  --imperial: #2a1838;
 }
 
 @theme inline {
   --color-bg: var(--bg);
-  --color-ink: var(--ink);
-  --color-hl: var(--hl);
-  --font-mono: ui-monospace, "JetBrains Mono", "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
-  --font-sans: "Inter", ui-sans-serif, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --color-bg-2: var(--bg-2);
+  --color-bg-3: var(--bg-3);
+  --color-panel: var(--panel);
+  --color-panel-edge: var(--panel-edge);
+  --color-panel-edge-2: var(--panel-edge-2);
+  --color-fg: var(--fg);
+  --color-fg-dim: var(--fg-dim);
+  --color-fg-faint: var(--fg-faint);
+  --color-copper: var(--copper);
+  --color-copper-bright: var(--copper-bright);
+  --color-copper-deep: var(--copper-deep);
+  --color-gold: var(--gold);
+  --color-phosphor: var(--phosphor);
+  --color-phosphor-dim: var(--phosphor-dim);
+  --color-crimson: var(--crimson);
+  --color-imperial: var(--imperial);
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
 
 html, body {
   background: var(--bg);
-  color: var(--ink);
+  color: var(--fg);
+  scroll-behavior: smooth;
 }
 
 body {
   font-family: var(--font-sans);
-  font-feature-settings: "ss01", "kern", "cv02", "cv03", "cv04", "cv11";
+  font-feature-settings: "kern", "ss01", "cv02";
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
-.mono { font-family: var(--font-mono); }
-
-/* Aggressive condensed display weight — no serif anywhere. */
-.display {
-  font-family: var(--font-sans);
-  font-weight: 900;
-  letter-spacing: -0.04em;
-  line-height: 0.88;
-  text-transform: uppercase;
-  font-stretch: condensed;
+/* Page background: layered vignette + vellum noise + scan lines. Reads as "operations console under low light," not flat dark-mode. */
+.dossier-bg {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(210, 138, 74, 0.10) 0, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 85% 100%, rgba(127, 229, 216, 0.05) 0, transparent 60%),
+    radial-gradient(ellipse 50% 30% at 10% 70%, rgba(42, 24, 56, 0.45) 0, transparent 70%),
+    var(--bg);
+  position: relative;
 }
+.dossier-bg::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(to bottom, transparent 0, transparent 3px, rgba(255, 255, 255, 0.014) 3px, rgba(255, 255, 255, 0.014) 4px),
+    radial-gradient(circle at 50% 50%, transparent 50%, rgba(0,0,0,0.4) 100%);
+  z-index: 0;
+  mix-blend-mode: overlay;
+}
+.dossier-bg::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='3'/><feColorMatrix values='0 0 0 0 0.95   0 0 0 0 0.85   0 0 0 0 0.62   0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  opacity: 0.35;
+  mix-blend-mode: overlay;
+}
+
+/* Glyphs / utilities */
+.mono { font-family: var(--font-mono); }
+.sans { font-family: var(--font-sans); }
 
 .eyebrow {
   font-family: var(--font-mono);
   font-size: 10px;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: var(--ink);
+  color: var(--fg-dim);
 }
+.eyebrow-copper { color: var(--copper); }
+.eyebrow-phosphor { color: var(--phosphor); }
 
-.rule { border-top: 1px solid var(--ink); }
-.rule-thick { border-top: 4px solid var(--ink); }
-.rule-l { border-left: 1px solid var(--ink); }
-
-/* Tournament cards — pure black rectangles with no fill. The label sits in the corner like a part number. */
-.card {
-  border: 1px solid var(--ink);
-  background: var(--bg);
-  padding: 1rem 1.1rem 1.1rem;
-  position: relative;
+/* Section header: bracket markers with copper deep on the brackets. */
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
   font-family: var(--font-mono);
-  font-size: 12.5px;
-  line-height: 1.55;
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--copper);
 }
-.card-tag {
-  position: absolute;
-  top: -1px;
-  left: -1px;
-  background: var(--ink);
-  color: var(--bg);
+.section-head::before { content: "❲"; color: var(--copper-deep); font-size: 1.4em; line-height: 0.7; }
+.section-head::after  { content: "❳"; color: var(--copper-deep); font-size: 1.4em; line-height: 0.7; }
+
+/* Heavy condensed display — for HERMES wordmark and headlines. */
+.wordmark {
+  font-family: var(--font-sans);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 0.93;
+  font-stretch: 75%;
+}
+.wordmark-tight {
+  font-family: var(--font-sans);
+  font-weight: 900;
+  letter-spacing: -0.06em;
+  line-height: 0.85;
+  font-stretch: 70%;
+  text-transform: uppercase;
+}
+
+/* The HERMES brand-strip "stamp." */
+.hermes-stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--copper);
+  padding: 0.25rem 0.625rem 0.25rem 0.5rem;
+  color: var(--copper);
   font-family: var(--font-mono);
   font-size: 10px;
-  letter-spacing: 0.22em;
-  padding: 3px 8px 3px 9px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, rgba(210,138,74,0.06), transparent);
+}
+
+/* Classified-style metadata pill. */
+.meta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.18rem 0.5rem;
+  border: 1px solid var(--panel-edge-2);
+  background: var(--bg-2);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+}
+
+/* Dashboard panel */
+.panel {
+  background: linear-gradient(180deg, rgba(255,255,255,0.012), transparent), var(--panel);
+  border: 1px solid var(--panel-edge);
+  position: relative;
+}
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.9rem;
+  border-bottom: 1px solid var(--panel-edge);
+  background: var(--bg-2);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+}
+.panel-body {
+  padding: 1rem 1.125rem;
+}
+
+/* Corner ticks on outlined boxes — instrumentation feel. */
+.tick-corners {
+  position: relative;
+}
+.tick-corners::before,
+.tick-corners::after {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: var(--copper);
+  border-style: solid;
+  pointer-events: none;
+}
+.tick-corners::before { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
+.tick-corners::after  { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
+
+/* Status LED. */
+.led {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--fg-faint);
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.4) inset;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.led-copper {
+  background: var(--copper);
+  box-shadow: 0 0 8px var(--copper), 0 0 0 1px rgba(0,0,0,0.4) inset;
+  animation: ledPulse 1.6s ease-in-out infinite;
+}
+.led-phosphor {
+  background: var(--phosphor);
+  box-shadow: 0 0 10px var(--phosphor), 0 0 0 1px rgba(0,0,0,0.4) inset;
+  animation: ledPulse 1.2s ease-in-out infinite;
+}
+.led-crimson {
+  background: var(--crimson);
+  box-shadow: 0 0 10px var(--crimson), 0 0 0 1px rgba(0,0,0,0.4) inset;
+}
+.led-good {
+  background: var(--gold);
+  box-shadow: 0 0 8px var(--gold), 0 0 0 1px rgba(0,0,0,0.4) inset;
+}
+@keyframes ledPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+/* Tournament cards: A / B / AB / CRIT */
+.tcard {
+  border: 1px solid var(--panel-edge);
+  background: linear-gradient(180deg, rgba(255,255,255,0.015), transparent), var(--bg-2);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 220ms ease, box-shadow 220ms ease;
+}
+.tcard-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.45rem 0.75rem;
+  border-bottom: 1px solid var(--panel-edge);
+  background: var(--bg-3);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
 }
-.card-winner {
-  background: var(--hl);
+.tcard-tag-A    { color: var(--fg); }
+.tcard-tag-B    { color: var(--phosphor); }
+.tcard-tag-AB   { color: var(--copper); }
+.tcard-tag-CRIT { color: var(--crimson); }
+.tcard-body {
+  padding: 0.85rem 0.95rem;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--fg);
+  max-height: 20rem;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  flex: 1;
 }
-.card-winner .card-tag {
-  background: var(--ink);
-  color: var(--hl);
+.tcard-winner {
+  border-color: var(--copper);
+  box-shadow: 0 0 0 1px var(--copper), 0 0 26px rgba(210, 138, 74, 0.22);
+}
+.tcard-winner .tcard-head {
+  background: linear-gradient(180deg, rgba(210,138,74,0.18), rgba(210,138,74,0.05));
 }
 
 .token-cursor::after {
   content: "▌";
   margin-left: 1px;
+  color: var(--phosphor);
   animation: blink 1s steps(2) infinite;
 }
 @keyframes blink {
   50% { opacity: 0; }
 }
 
-.spinner-bar {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  background: var(--ink);
-  animation: pulse 0.9s ease-in-out infinite;
+/* Gauge: Borda count. */
+.gauge-track {
+  position: relative;
+  height: 16px;
+  background: var(--bg-3);
+  border: 1px solid var(--panel-edge);
 }
-@keyframes pulse {
-  0%, 100% { transform: scaleY(1); }
-  50% { transform: scaleY(0.2); }
+.gauge-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: linear-gradient(90deg, var(--copper-deep), var(--copper) 60%, var(--copper-bright));
+  box-shadow: 0 0 14px rgba(210, 138, 74, 0.5) inset, 0 0 12px var(--copper);
+  transition: width 360ms cubic-bezier(0.2, 0.6, 0.2, 1);
+}
+.gauge-fill-dim { background: var(--panel-edge-2); box-shadow: none; }
+.gauge-ticks {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    to right,
+    transparent 0,
+    transparent calc(10% - 1px),
+    rgba(0,0,0,0.55) calc(10% - 1px),
+    rgba(0,0,0,0.55) 10%
+  );
+  pointer-events: none;
 }
 
-/* Vote bars: solid black blocks, no gradient. */
-.vote-bar {
-  height: 6px;
-  background: var(--ink);
+/* Buttons */
+.btn-primary {
+  background: linear-gradient(180deg, var(--copper-bright), var(--copper) 60%, var(--copper-deep));
+  color: #1a0d05;
+  border: 1px solid var(--copper-deep);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.95rem 1.25rem;
+  transition: filter 140ms, box-shadow 140ms;
+  position: relative;
+  cursor: pointer;
+}
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+  box-shadow: 0 0 22px rgba(240, 188, 124, 0.45);
+}
+.btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--fg);
+  border: 1px solid var(--panel-edge-2);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 0.45rem 0.625rem;
+  transition: border-color 120ms, color 120ms, background 120ms;
+  cursor: pointer;
+}
+.btn-ghost:hover:not(:disabled) {
+  border-color: var(--copper);
+  color: var(--copper-bright);
+  background: rgba(210, 138, 74, 0.06);
+}
+.btn-ghost:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.btn-stop {
+  background: linear-gradient(180deg, var(--crimson), #7a1620);
+  color: #1a0408;
+  border: 1px solid #6a1620;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.95rem 1.25rem;
+  cursor: pointer;
 }
 
-::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-track { background: var(--bg); border-left: 1px solid var(--ink-08); }
-::-webkit-scrollbar-thumb { background: var(--ink); border-radius: 0; }
+/* Range input — copper slider with glow. */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  background: transparent;
+  height: 22px;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 2px;
+  background: linear-gradient(90deg, var(--copper-deep), var(--panel-edge-2));
+}
+input[type="range"]::-moz-range-track {
+  height: 2px;
+  background: linear-gradient(90deg, var(--copper-deep), var(--panel-edge-2));
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: var(--copper);
+  border: 0;
+  border-radius: 50%;
+  margin-top: -6px;
+  box-shadow: 0 0 12px var(--copper);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: var(--copper);
+  border: 0;
+  border-radius: 50%;
+  box-shadow: 0 0 12px var(--copper);
+}
 
-/* Honest disclosure: a real grid line in the corner so it's clear nothing here is generative cream-and-serif AI slop. */
-.grid-overlay {
+textarea {
+  background: var(--bg-2);
+  color: var(--fg);
+  border: 1px solid var(--panel-edge-2);
+  transition: border-color 120ms, box-shadow 120ms;
+}
+textarea:focus {
+  outline: none;
+  border-color: var(--copper);
+  box-shadow: 0 0 0 1px var(--copper-deep), 0 0 18px rgba(210, 138, 74, 0.15);
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--panel-edge-2); border-radius: 0; }
+::-webkit-scrollbar-thumb:hover { background: var(--copper-deep); }
+
+/* Hermes specific decorations */
+.copper-rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--copper) 30%, var(--copper) 70%, transparent);
+  opacity: 0.6;
+}
+.copper-glow-text {
+  text-shadow: 0 0 18px rgba(210, 138, 74, 0.35);
+}
+
+/* The Roman-numeral pass number, set big inside each pass panel. */
+.roman {
+  font-family: var(--font-sans);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  font-feature-settings: "kern";
+  line-height: 1;
+}
+
+/* Subtle entry animation for newly-arriving panels. */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 320ms ease-out both; }
+
+/* Blueprint grid */
+.grid-blueprint {
   background-image:
-    linear-gradient(to right, var(--ink-08) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--ink-08) 1px, transparent 1px);
-  background-size: 80px 80px;
+    linear-gradient(to right, rgba(210, 138, 74, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(210, 138, 74, 0.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Top status bar — sticky, instrument-feel. */
+.statusbar {
+  background: rgba(8, 7, 10, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--panel-edge);
+}
+
+/* Caduceus glyph stamped on the masthead corner. */
+.caduceus-bg {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.06;
+  color: var(--copper);
+}
+
+/* Stamp-like footer seal. */
+.seal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border: 1.5px solid var(--copper);
+  border-radius: 50%;
+  color: var(--copper);
+  box-shadow: 0 0 18px rgba(210, 138, 74, 0.2) inset;
 }

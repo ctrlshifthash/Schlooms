@@ -1,38 +1,39 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Phase, Role, StreamEvent } from "@/lib/types";
+import { HermesMark } from "@/components/HermesMark";
+
+interface PhaseSlot {
+  label: string;
+  text: string;
+  streaming: boolean;
+  done: boolean;
+}
 
 interface PassState {
   pass: number;
-  phases: Partial<Record<Phase, { label: string; text: string; streaming: boolean; done: boolean }>>;
+  phases: Partial<Record<Phase, PhaseSlot>>;
   votes: { judge: number; ranking: Role[]; reason: string }[];
   borda?: Record<Role, number>;
   winner?: Role;
 }
 
-const PHASE_LABELS: Record<Phase, string> = {
-  author: "Author",
-  critic: "Critic",
-  authorB: "Reviser",
-  synth: "Synthesizer",
-  judges: "Judges",
-  decided: "Decided",
-  converged: "Converged",
-  max_passes: "Max passes",
-};
-
-const PHASE_TO_CARD: Partial<Record<Phase, Role | "critic">> = {
-  author: "A",
-  critic: "critic",
-  authorB: "B",
-  synth: "AB",
-};
+const ROMAN: Record<number, string> = { 1: "I", 2: "II", 3: "III", 4: "IV", 5: "V" };
 
 const PRESETS = [
-  "Write a one-page memo proposing how a 50-person Series B SaaS company should handle the move from a remote-first to hybrid work model. Be specific about the policy, the rollout, and what to do about employees who can't relocate.",
-  "Draft a tight 300-word product update announcing a new feature: real-time collaboration in a code editor. Audience: existing power users. Avoid marketing fluff; show the technical substance.",
-  "Outline a 4-week onboarding plan for a senior backend engineer joining a payments team. Concrete weekly milestones, not generic 'meet the team' filler.",
+  {
+    title: "Hybrid work memo",
+    text: "Write a one-page memo proposing how a 50-person Series B SaaS company should handle the move from a remote-first to hybrid work model. Be specific about the policy, the rollout, and what to do about employees who can't relocate.",
+  },
+  {
+    title: "Realtime collab launch",
+    text: "Draft a tight 300-word product update announcing a new feature: real-time collaboration in a code editor. Audience: existing power users. Avoid marketing fluff; show the technical substance.",
+  },
+  {
+    title: "Senior eng onboarding",
+    text: "Outline a 4-week onboarding plan for a senior backend engineer joining a payments team. Concrete weekly milestones, not generic 'meet the team' filler.",
+  },
 ];
 
 export default function Tournament() {
@@ -41,9 +42,20 @@ export default function Tournament() {
   const [numJudges, setNumJudges] = useState(3);
   const [running, setRunning] = useState(false);
   const [passes, setPasses] = useState<PassState[]>([]);
-  const [terminal, setTerminal] = useState<{ kind: "converged" | "max_passes" | "error"; pass?: number; text: string } | null>(null);
+  const [terminal, setTerminal] = useState<
+    | { kind: "converged" | "max_passes" | "error"; pass?: number; text: string }
+    | null
+  >(null);
   const [error, setError] = useState<string | null>(null);
+  const [startedAt, setStartedAt] = useState<number | null>(null);
+  const [tick, setTick] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    if (!running) return;
+    const id = setInterval(() => setTick((t) => t + 1), 500);
+    return () => clearInterval(id);
+  }, [running]);
 
   const applyEvent = useCallback((ev: StreamEvent) => {
     setPasses((prev) => {
@@ -103,7 +115,10 @@ export default function Tournament() {
           if (idx === -1) break;
           next[idx] = {
             ...next[idx],
-            votes: [...next[idx].votes, { judge: ev.judge, ranking: ev.ranking, reason: ev.reason }],
+            votes: [
+              ...next[idx].votes,
+              { judge: ev.judge, ranking: ev.ranking, reason: ev.reason },
+            ],
           };
           break;
         }
@@ -115,11 +130,10 @@ export default function Tournament() {
       }
       return next;
     });
-    if (ev.type === "converged") {
-      setTerminal({ kind: "converged", pass: ev.pass, text: ev.final });
-    } else if (ev.type === "max_passes_reached") {
+    if (ev.type === "converged") setTerminal({ kind: "converged", pass: ev.pass, text: ev.final });
+    else if (ev.type === "max_passes_reached")
       setTerminal({ kind: "max_passes", pass: ev.pass, text: ev.final });
-    } else if (ev.type === "error") {
+    else if (ev.type === "error") {
       setTerminal({ kind: "error", text: ev.message });
       setError(ev.message);
     }
@@ -129,12 +143,13 @@ export default function Tournament() {
     if (running) return;
     const trimmed = task.trim();
     if (trimmed.length < 8) {
-      setError("Give it at least a sentence.");
+      setError("Task needs at least a sentence.");
       return;
     }
     setError(null);
     setTerminal(null);
     setPasses([]);
+    setStartedAt(Date.now());
     setRunning(true);
 
     const ac = new AbortController();
@@ -169,9 +184,8 @@ export default function Tournament() {
         for (const raw of events) {
           const line = raw.split("\n").find((l) => l.startsWith("data: "));
           if (!line) continue;
-          const json = line.slice("data: ".length);
           try {
-            const ev = JSON.parse(json) as StreamEvent;
+            const ev = JSON.parse(line.slice("data: ".length)) as StreamEvent;
             applyEvent(ev);
           } catch {
             // ignore malformed line
@@ -193,267 +207,452 @@ export default function Tournament() {
     setRunning(false);
   }, []);
 
+  const elapsedSec =
+    startedAt && (running || terminal)
+      ? Math.floor((Date.now() - startedAt) / 1000)
+      : 0;
+  void tick; // re-render trigger for elapsed counter
+
+  const allPhases = passes.flatMap((p) => Object.values(p.phases));
+  const doneCount = allPhases.filter((p) => p?.done).length;
+  const phaseProgress =
+    allPhases.length > 0 ? Math.min((doneCount / allPhases.length) * 100, 100) : 0;
+
   return (
     <div className="w-full">
-      {/* Input panel */}
-      <div className="rule-thick border-b border-ink">
-        <div className="grid grid-cols-1 md:grid-cols-[1fr_280px]">
-          <div className="p-6 md:p-8 border-b md:border-b-0 md:border-r border-ink">
-            <div className="eyebrow mb-3">Task / 01</div>
+      {/* Run controls */}
+      <section className="px-6 md:px-12 py-12 border-b border-panel-edge">
+        <div className="flex items-end justify-between mb-6">
+          <div className="section-head">RUN CONTROLS · II</div>
+          <span className="eyebrow">fig. II</span>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-px bg-panel-edge border border-panel-edge">
+          {/* Task input */}
+          <div className="bg-panel p-5 md:p-6 relative">
+            <div className="flex items-center justify-between mb-3">
+              <div className="eyebrow eyebrow-copper flex items-center gap-2">
+                <span className="text-copper">
+                  <HermesMark size={12} />
+                </span>
+                task definition
+              </div>
+              <div className="eyebrow">{task.length} / 4000</div>
+            </div>
             <textarea
               value={task}
               onChange={(e) => setTask(e.target.value)}
-              placeholder="A well-specified, opinionated writing or planning task. The more concrete, the better."
-              rows={5}
+              placeholder="A concrete, opinionated writing or planning task. The more specific the constraints, the better the tournament differentiates A / B / AB."
+              rows={6}
               disabled={running}
-              className="w-full mono text-sm leading-relaxed bg-transparent border border-ink p-3 outline-none resize-none focus:bg-[rgba(0,0,0,0.03)] disabled:opacity-50"
               maxLength={4000}
+              className="w-full mono text-[13px] leading-relaxed p-3 outline-none resize-none disabled:opacity-50"
             />
-            <div className="mt-3 flex flex-wrap gap-2">
-              {PRESETS.map((p, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  disabled={running}
-                  onClick={() => setTask(p)}
-                  className="eyebrow border border-ink px-2 py-1 hover:bg-ink hover:text-bg transition-colors disabled:opacity-30"
-                >
-                  Preset {i + 1}
-                </button>
-              ))}
+            <div className="mt-4">
+              <div className="eyebrow mb-2">presets</div>
+              <div className="flex flex-wrap gap-2">
+                {PRESETS.map((p, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    disabled={running}
+                    onClick={() => setTask(p.text)}
+                    className="btn-ghost"
+                  >
+                    {p.title}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-          <div className="p-6 md:p-8">
-            <div className="eyebrow mb-3">Config / 02</div>
-            <label className="block mb-4">
-              <div className="mono text-xs mb-1">max passes: {maxPasses}</div>
-              <input
-                type="range"
-                min={1}
-                max={5}
-                value={maxPasses}
-                disabled={running}
-                onChange={(e) => setMaxPasses(parseInt(e.target.value, 10))}
-                className="w-full accent-black"
-              />
-            </label>
-            <label className="block mb-6">
-              <div className="mono text-xs mb-1">judges: {numJudges}</div>
-              <input
-                type="range"
-                min={1}
-                max={5}
-                value={numJudges}
-                disabled={running}
-                onChange={(e) => setNumJudges(parseInt(e.target.value, 10))}
-                className="w-full accent-black"
-              />
-            </label>
+
+          {/* Config + launch */}
+          <div className="bg-panel p-5 md:p-6 relative">
+            <div className="eyebrow eyebrow-copper mb-4">configuration</div>
+
+            <div className="space-y-5 mb-6">
+              <div>
+                <div className="flex justify-between mono text-[11px] uppercase tracking-[0.18em] text-fg-dim mb-1.5">
+                  <span>max passes</span>
+                  <span className="text-copper">{maxPasses}</span>
+                </div>
+                <input
+                  type="range"
+                  min={1}
+                  max={5}
+                  value={maxPasses}
+                  disabled={running}
+                  onChange={(e) => setMaxPasses(parseInt(e.target.value, 10))}
+                />
+              </div>
+              <div>
+                <div className="flex justify-between mono text-[11px] uppercase tracking-[0.18em] text-fg-dim mb-1.5">
+                  <span>judges</span>
+                  <span className="text-copper">{numJudges}</span>
+                </div>
+                <input
+                  type="range"
+                  min={1}
+                  max={5}
+                  value={numJudges}
+                  disabled={running}
+                  onChange={(e) => setNumJudges(parseInt(e.target.value, 10))}
+                />
+              </div>
+            </div>
+
             {!running ? (
               <button
                 type="button"
                 onClick={run}
-                className="display w-full text-2xl bg-ink text-bg py-4 hover:bg-hl hover:text-ink transition-colors"
+                className="btn-primary w-full flex items-center justify-center gap-2"
               >
-                Run tournament
+                <span className="opacity-80">
+                  <HermesMark size={14} glow={false} />
+                </span>
+                Dispatch tournament
               </button>
             ) : (
-              <button
-                type="button"
-                onClick={stop}
-                className="display w-full text-2xl bg-hl text-ink py-4 border border-ink"
-              >
-                Stop
+              <button type="button" onClick={stop} className="btn-stop w-full">
+                ■ Abort
               </button>
             )}
+
             {error && (
-              <div className="mt-4 mono text-xs border border-ink p-2 bg-hl">{error}</div>
+              <div className="mt-4 mono text-[11px] border border-crimson/60 bg-crimson/10 text-crimson p-2.5">
+                {error}
+              </div>
             )}
           </div>
         </div>
-      </div>
+
+        {/* Live status strip */}
+        {(running || passes.length > 0 || terminal) && (
+          <div className="mt-5 panel">
+            <div className="panel-header">
+              <div className="flex items-center gap-2">
+                <span
+                  className={`led ${
+                    running
+                      ? "led-phosphor"
+                      : terminal?.kind === "converged"
+                      ? "led-good"
+                      : terminal?.kind === "error"
+                      ? "led-crimson"
+                      : "led-copper"
+                  }`}
+                />
+                <span className="text-copper">
+                  {running
+                    ? "tournament running"
+                    : terminal?.kind === "converged"
+                    ? "converged"
+                    : terminal?.kind === "max_passes"
+                    ? "max passes reached"
+                    : terminal?.kind === "error"
+                    ? "error"
+                    : "idle"}
+                </span>
+              </div>
+              <div className="flex items-center gap-6 text-fg-dim">
+                <span>
+                  passes — <span className="text-fg">{passes.length}</span> /{" "}
+                  {maxPasses}
+                </span>
+                <span>
+                  phases — <span className="text-fg">{doneCount}</span> /{" "}
+                  {allPhases.length || "—"}
+                </span>
+                <span>
+                  elapsed — <span className="text-fg">{elapsedSec}s</span>
+                </span>
+              </div>
+            </div>
+            <div className="px-3.5 py-3">
+              <div className="gauge-track">
+                <div
+                  className="gauge-fill"
+                  style={{
+                    width: `${
+                      passes.length > 0 ? phaseProgress : running ? 3 : 0
+                    }%`,
+                  }}
+                />
+                <div className="gauge-ticks" />
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
 
       {/* Live tournament */}
       {passes.length > 0 && (
-        <div className="p-6 md:p-10 border-b border-ink">
-          <div className="eyebrow mb-6">Live tournament / 03</div>
-          <div className="space-y-12">
+        <section className="px-6 md:px-12 py-14 border-b border-panel-edge">
+          <div className="flex items-end justify-between mb-7">
+            <div className="section-head">LIVE TOURNAMENT · III</div>
+            <span className="eyebrow">fig. III</span>
+          </div>
+          <div className="space-y-10">
             {passes.map((p) => (
               <PassBlock key={p.pass} pass={p} totalJudges={numJudges} />
             ))}
           </div>
-        </div>
+        </section>
       )}
 
       {/* Terminal verdict */}
       {terminal && (
-        <div className="p-6 md:p-10">
-          <div className="eyebrow mb-3">
-            {terminal.kind === "converged" && "Converged / 04"}
-            {terminal.kind === "max_passes" && "Max passes reached / 04"}
-            {terminal.kind === "error" && "Error / 04"}
+        <section className="px-6 md:px-12 py-14 fade-up">
+          <div className="flex items-end justify-between mb-6">
+            <div className="section-head">
+              {terminal.kind === "converged" && "VERDICT · CONVERGED"}
+              {terminal.kind === "max_passes" && "VERDICT · MAX PASSES"}
+              {terminal.kind === "error" && "VERDICT · ERROR"}
+            </div>
+            <span className="eyebrow">fig. IV</span>
           </div>
-          <div className="display text-4xl md:text-6xl mb-6">
-            {terminal.kind === "converged" && "A held."}
-            {terminal.kind === "max_passes" && "Tap out."}
-            {terminal.kind === "error" && "Broke."}
+
+          <div className="flex items-center gap-4 mb-7">
+            <span
+              className={`led ${
+                terminal.kind === "converged"
+                  ? "led-good"
+                  : terminal.kind === "error"
+                  ? "led-crimson"
+                  : "led-copper"
+              }`}
+            />
+            <h2 className="wordmark text-4xl md:text-5xl">
+              {terminal.kind === "converged" && (
+                <span className="text-gold copper-glow-text">
+                  A held twice. Loop converged.
+                </span>
+              )}
+              {terminal.kind === "max_passes" && (
+                <span className="text-fg">
+                  Pass cap reached. Final winner archived.
+                </span>
+              )}
+              {terminal.kind === "error" && (
+                <span className="text-crimson">Run failed.</span>
+              )}
+            </h2>
           </div>
-          {terminal.kind !== "error" && (
-            <div className="card mono text-sm whitespace-pre-wrap">{terminal.text}</div>
+
+          {terminal.kind !== "error" ? (
+            <div className="panel tick-corners">
+              <div className="panel-header">
+                <div className="flex items-center gap-2">
+                  <span className="text-copper">
+                    <HermesMark size={14} />
+                  </span>
+                  <span className="text-copper">final artifact</span>
+                </div>
+                <div>pass {terminal.pass}</div>
+              </div>
+              <div className="panel-body mono text-[13px] leading-relaxed whitespace-pre-wrap">
+                {terminal.text}
+              </div>
+            </div>
+          ) : (
+            <div className="panel">
+              <div className="panel-header">
+                <div className="flex items-center gap-2">
+                  <span className="led led-crimson" />
+                  <span className="text-crimson">error trace</span>
+                </div>
+              </div>
+              <div className="panel-body mono text-[12px] text-crimson whitespace-pre-wrap">
+                {terminal.text}
+              </div>
+            </div>
           )}
-          {terminal.kind === "error" && (
-            <div className="mono text-sm border border-ink p-3 bg-hl">{terminal.text}</div>
-          )}
-        </div>
+        </section>
       )}
     </div>
   );
 }
 
 function PassBlock({ pass, totalJudges }: { pass: PassState; totalJudges: number }) {
-  const critic = pass.phases.critic;
   const a = pass.phases.author;
+  const critic = pass.phases.critic;
   const b = pass.phases.authorB;
   const ab = pass.phases.synth;
   const winnerSet: Role | null = pass.winner ?? null;
+  const passDone = !!pass.winner;
+  const passActive = !passDone && Object.values(pass.phases).some((p) => p?.streaming);
 
   return (
-    <div>
-      <div className="flex items-baseline gap-4 mb-4">
-        <div className="display text-5xl md:text-6xl">P{String(pass.pass).padStart(2, "0")}</div>
-        <div className="eyebrow">
-          {a ? "author • " : ""}critic → reviser → synthesizer → {totalJudges} judges
-        </div>
-      </div>
-
-      {a && (
-        <div className="mb-4">
-          <Card label="A — drafted" tag="A" content={a.text} streaming={a.streaming} done={a.done} />
-        </div>
-      )}
-
-      {critic && (
-        <div className="mb-4">
-          <Card
-            label="critique"
-            tag="CRIT"
-            content={critic.text}
-            streaming={critic.streaming}
-            done={critic.done}
-            faded
+    <div className="panel tick-corners fade-up">
+      <div className="panel-header">
+        <div className="flex items-center gap-3">
+          <span
+            className={`led ${
+              passDone ? "led-good" : passActive ? "led-phosphor" : "led-copper"
+            }`}
           />
+          <span className="roman text-copper text-base">
+            PASS {ROMAN[pass.pass] ?? pass.pass}
+          </span>
+          <span className="text-fg-faint">
+            · author → critic → reviser → synthesizer → {totalJudges} judges
+          </span>
         </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        {b && (
-          <Card
-            label="B — revised"
-            tag="B"
-            content={b.text}
-            streaming={b.streaming}
-            done={b.done}
-            winner={winnerSet === "B"}
-          />
-        )}
-        {ab && (
-          <Card
-            label="AB — synthesis"
-            tag="AB"
-            content={ab.text}
-            streaming={ab.streaming}
-            done={ab.done}
-            winner={winnerSet === "AB"}
-          />
+        {pass.winner && (
+          <div className="flex items-center gap-2">
+            <span className="text-fg-faint">winner</span>
+            <span className="text-gold font-bold">{pass.winner}</span>
+          </div>
         )}
       </div>
 
-      {pass.votes.length > 0 && (
-        <div className="mt-6">
-          <div className="eyebrow mb-3">
-            judge panel — {pass.votes.length} / {totalJudges}
-            {pass.votes.length < totalJudges && <span className="ml-2 spinner-bar align-baseline" />}
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {pass.votes.map((v) => (
-              <div key={v.judge} className="border border-ink p-3">
-                <div className="mono text-xs flex items-center gap-2 mb-2">
-                  <span>J{v.judge + 1}</span>
-                  <span className="opacity-50">|</span>
-                  <span>
-                    {v.ranking.map((r, idx) => (
-                      <span key={idx}>
-                        {idx > 0 && " > "}
-                        <span className={r === winnerSet ? "underline" : ""}>{r}</span>
-                      </span>
-                    ))}
-                  </span>
-                </div>
-                {v.reason && <div className="mono text-xs opacity-70 leading-snug">{v.reason}</div>}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <div className="panel-body space-y-4">
+        {a && (
+          <TCard tag="A" label="incumbent draft" slot={a} winner={winnerSet === "A"} />
+        )}
 
-      {pass.borda && pass.winner && (
-        <div className="mt-6 border-t border-ink pt-4">
-          <div className="eyebrow mb-3">borda count</div>
-          <div className="grid grid-cols-3 gap-4">
-            {(["A", "B", "AB"] as Role[]).map((r) => {
-              const score = pass.borda![r];
-              const max = Math.max(...Object.values(pass.borda!));
-              const pct = max === 0 ? 0 : (score / max) * 100;
-              return (
-                <div key={r}>
-                  <div className="mono text-xs flex justify-between mb-1">
-                    <span className={r === pass.winner ? "font-bold" : ""}>{r}</span>
-                    <span>{score}</span>
+        {critic && <TCard tag="CRIT" label="critic findings" slot={critic} faded />}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {b && (
+            <TCard
+              tag="B"
+              label="revised by critique"
+              slot={b}
+              winner={winnerSet === "B"}
+            />
+          )}
+          {ab && (
+            <TCard
+              tag="AB"
+              label="synthesis of A + B"
+              slot={ab}
+              winner={winnerSet === "AB"}
+            />
+          )}
+        </div>
+
+        {pass.votes.length > 0 && (
+          <div className="mt-3">
+            <div className="flex items-center gap-3 mb-3">
+              <span className="eyebrow eyebrow-copper">judge panel</span>
+              <span className="mono text-[11px] text-fg-dim flex items-center gap-2">
+                {pass.votes.length} / {totalJudges}
+                {pass.votes.length < totalJudges && <span className="led led-phosphor" />}
+              </span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
+              {pass.votes.map((v) => (
+                <div
+                  key={v.judge}
+                  className="border border-panel-edge bg-bg-2 p-3 fade-up"
+                >
+                  <div className="flex items-center gap-2 mono text-[11px] mb-2">
+                    <span className="text-copper">J{v.judge + 1}</span>
+                    <span className="text-fg-faint">·</span>
+                    <span className="text-fg">
+                      {v.ranking.map((r, idx) => (
+                        <span key={idx}>
+                          {idx > 0 && <span className="text-fg-faint"> › </span>}
+                          <span
+                            className={
+                              r === winnerSet ? "text-gold font-bold" : ""
+                            }
+                          >
+                            {r}
+                          </span>
+                        </span>
+                      ))}
+                    </span>
                   </div>
-                  <div className="vote-bar" style={{ width: `${pct}%` }} />
+                  {v.reason && (
+                    <div className="mono text-[11px] text-fg-dim leading-snug">
+                      {v.reason}
+                    </div>
+                  )}
                 </div>
-              );
-            })}
+              ))}
+            </div>
           </div>
-          <div className="mt-3 mono text-xs">
-            winner: <span className="bg-ink text-bg px-1.5 py-0.5">{pass.winner}</span>
+        )}
+
+        {pass.borda && pass.winner && (
+          <div className="mt-5 border-t border-panel-edge pt-5">
+            <div className="eyebrow eyebrow-copper mb-3">borda count</div>
+            <div className="grid grid-cols-3 gap-4">
+              {(["A", "B", "AB"] as Role[]).map((r) => {
+                const score = pass.borda![r];
+                const max = Math.max(...Object.values(pass.borda!));
+                const pct = max === 0 ? 0 : (score / max) * 100;
+                const isWinner = r === pass.winner;
+                return (
+                  <div key={r}>
+                    <div className="flex justify-between mono text-[11px] mb-1.5">
+                      <span className={isWinner ? "text-gold" : "text-fg-dim"}>{r}</span>
+                      <span className={isWinner ? "text-gold" : "text-fg"}>{score}</span>
+                    </div>
+                    <div className="gauge-track">
+                      <div
+                        className={`gauge-fill ${isWinner ? "" : "gauge-fill-dim"}`}
+                        style={{ width: `${pct}%` }}
+                      />
+                      <div className="gauge-ticks" />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
 
-function Card({
-  label,
+function TCard({
   tag,
-  content,
-  streaming,
-  done,
+  label,
+  slot,
   winner,
   faded,
 }: {
+  tag: "A" | "B" | "AB" | "CRIT";
   label: string;
-  tag: string;
-  content: string;
-  streaming: boolean;
-  done: boolean;
+  slot: PhaseSlot;
   winner?: boolean;
   faded?: boolean;
 }) {
   return (
-    <div className={`card ${winner ? "card-winner" : ""} ${faded ? "opacity-80" : ""}`}>
-      <span className="card-tag">{tag}</span>
-      <div className="mt-2 whitespace-pre-wrap break-words max-h-72 overflow-y-auto">
-        {content}
-        {streaming && !done && <span className="token-cursor" />}
-        {!content && !done && (
-          <span className="opacity-50">
-            <span className="spinner-bar" /> generating…
+    <div className={`tcard ${winner ? "tcard-winner" : ""} ${faded ? "opacity-90" : ""}`}>
+      <div className="tcard-head">
+        <div className="flex items-center gap-2">
+          <span className={`tcard-tag-${tag}`}>{tag}</span>
+          <span className="text-fg-faint normal-case tracking-normal">/ {label}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          {slot.streaming && !slot.done && (
+            <>
+              <span className="led led-phosphor" />
+              <span className="text-phosphor">streaming</span>
+            </>
+          )}
+          {slot.done && (
+            <>
+              <span className="led led-good" />
+              <span className="text-gold">done</span>
+            </>
+          )}
+          {winner && <span className="text-gold ml-2">★ winner</span>}
+        </div>
+      </div>
+      <div className="tcard-body">
+        {slot.text || (
+          <span className="text-fg-faint flex items-center gap-2">
+            <span className="led led-phosphor" /> generating…
           </span>
         )}
+        {slot.streaming && !slot.done && <span className="token-cursor" />}
       </div>
-      <div className="eyebrow mt-3 opacity-60">{label}</div>
     </div>
   );
 }
