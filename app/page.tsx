@@ -19,16 +19,19 @@ export default function Home() {
             </div>
             <nav className="flex items-center gap-2 flex-wrap">
               <a
-                href="https://pump.fun/coin/9eTZTKpi9R5sHT27CBc4Y1W6Vvc9nrDAFKvSy5B8pump"
+                href="https://pump.fun/coin/"
                 target="_blank"
                 rel="noreferrer"
                 className="nav-box nav-box-icon"
                 aria-label="Pump.fun"
               >
-                <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                  <circle cx="8" cy="8" r="6.4" fill="none" stroke="currentColor" strokeWidth="1.4" />
-                  <path d="M6 5h2.2a2 2 0 1 1 0 4H7v2H6V5zm1 1v2h1.2a1 1 0 1 0 0-2H7z" />
-                </svg>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="https://static.wixstatic.com/media/e2da02_248e6293fa024f6e9dd4130271bb14c3~mv2.png"
+                  alt=""
+                  width={18}
+                  height={18}
+                />
               </a>
               <a
                 href="https://x.com/tryautoreason"

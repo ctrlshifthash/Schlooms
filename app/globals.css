@@ -506,6 +506,7 @@ textarea:focus {
   justify-content: center;
 }
 .nav-box-icon svg { width: 15px; height: 15px; }
+.nav-box-icon img { width: 18px; height: 18px; object-fit: contain; display: block; }
 
 /* Top status bar — sticky, instrument-feel. */
 .statusbar {
