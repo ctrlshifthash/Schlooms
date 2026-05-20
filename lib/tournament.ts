@@ -27,7 +27,7 @@ function makeClient(apiKey: string): OpenAI {
     defaultHeaders: {
       // OpenRouter optional analytics headers — identifies the app on their dashboard.
       "HTTP-Referer": "https://github.com/ctrlshifthash/Schlooms",
-      "X-Title": "Schlooms - autoreason console",
+      "X-Title": "Autoreason - live console",
     },
   });
 }

@@ -13,9 +13,9 @@ export default function Home() {
                 <HermesMark size={20} />
               </span>
               <span className="mono text-[11px] tracking-[0.24em] uppercase text-copper">
-                Hermes Agent
+                Autoreason
               </span>
-              <span className="mono text-[10px] text-fg-faint">/ Schlooms · v0.1</span>
+              <span className="mono text-[10px] text-fg-faint">live console</span>
             </div>
             <div className="flex items-center gap-3 flex-wrap mono text-[10px] tracking-[0.18em] uppercase text-fg-dim">
               <span className="meta-pill">
@@ -25,19 +25,6 @@ export default function Home() {
                 <span className="text-fg-faint">M—</span>
                 <span className="text-fg">claude-sonnet-4.5</span>
               </span>
-              <span className="meta-pill">
-                <span className="text-fg-faint">VIA—</span>
-                <span className="text-copper">openrouter</span>
-              </span>
-              <a
-                href="https://github.com/NousResearch/autoreason"
-                target="_blank"
-                rel="noreferrer"
-                className="meta-pill hover:text-copper-bright"
-              >
-                <span className="text-fg-faint">METHOD—</span>
-                <span className="text-copper">autoreason</span>
-              </a>
             </div>
           </div>
           <div className="copper-rule" />
@@ -56,7 +43,7 @@ export default function Home() {
                 <span className="text-copper">
                   <HermesMark size={14} glow={false} />
                 </span>
-                HERMES AGENT · DOSSIER 01
+                AUTOREASON · DOSSIER 01
               </span>
               <span className="meta-pill">
                 <span className="led led-copper" />
@@ -84,9 +71,9 @@ export default function Home() {
             </div>
 
             <p className="mt-9 mono text-[13px] leading-relaxed text-fg-dim max-w-3xl">
-              <span className="text-copper-bright">SHL0MS</span> · {" "}
-              <span className="text-copper-bright">HERMES AGENT</span> — Nous
-              Research. Iterative self-refinement fails for three structural
+              Method by{" "}
+              <span className="text-copper-bright">SHL0MS · Hermes Agent</span>{" "}
+              (Nous Research). Iterative self-refinement fails for three structural
               reasons:{" "}
               <span className="text-fg">prompt bias</span> (models hallucinate
               flaws when asked to critique),{" "}
@@ -145,9 +132,9 @@ export default function Home() {
                 <HermesMark size={30} glow={false} />
               </div>
               <div>
-                <div className="wordmark text-2xl text-copper">HERMES AGENT</div>
+                <div className="wordmark text-2xl text-copper">AUTOREASON</div>
                 <div className="mono text-[11px] text-fg-dim tracking-[0.18em] uppercase">
-                  Schlooms · autoreason console
+                  live console
                 </div>
               </div>
             </div>

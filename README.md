@@ -1,4 +1,4 @@
-# Schlooms
+# Autoreason — live console
 
 Live, in-browser console for the **autoreason** self-refinement tournament from
 [NousResearch/autoreason](https://github.com/NousResearch/autoreason) (SHL0MS · Hermes Agent).

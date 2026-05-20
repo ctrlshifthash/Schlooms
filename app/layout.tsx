@@ -15,9 +15,9 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Schlooms — autoreason tournament",
+  title: "Autoreason — live console",
   description:
-    "Watch the autoreason self-refinement tournament in real time. A, B, AB, judged by Borda count.",
+    "Watch the autoreason self-refinement tournament in real time. A, B, AB, judged by blind Borda count.",
 };
 
 export default function RootLayout({
