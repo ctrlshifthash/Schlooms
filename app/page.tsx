@@ -22,38 +22,35 @@ export default function Home() {
                 href="https://pump.fun/coin/9eTZTKpi9R5sHT27CBc4Y1W6Vvc9nrDAFKvSy5B8pump"
                 target="_blank"
                 rel="noreferrer"
-                className="nav-box"
+                className="nav-box nav-box-icon"
                 aria-label="Pump.fun"
               >
                 <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
                   <circle cx="8" cy="8" r="6.4" fill="none" stroke="currentColor" strokeWidth="1.4" />
                   <path d="M6 5h2.2a2 2 0 1 1 0 4H7v2H6V5zm1 1v2h1.2a1 1 0 1 0 0-2H7z" />
                 </svg>
-                Pump.fun
               </a>
               <a
                 href="https://x.com/tryhermesx402"
                 target="_blank"
                 rel="noreferrer"
-                className="nav-box"
+                className="nav-box nav-box-icon"
                 aria-label="X"
               >
                 <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
                   <path d="M12.3 1.5h2.3l-5 5.7L15.5 14.5h-4.6l-3.6-4.7-4.1 4.7H.9l5.4-6.1L.5 1.5h4.7l3.3 4.4 3.8-4.4zM11.5 13.1h1.3L4.6 2.9H3.2l8.3 10.2z" />
                 </svg>
-                X
               </a>
               <a
                 href="https://github.com/maxpaperclips/Autoreason"
                 target="_blank"
                 rel="noreferrer"
-                className="nav-box"
+                className="nav-box nav-box-icon"
                 aria-label="GitHub"
               >
                 <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
                   <path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.08.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.42 7.42 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z" />
                 </svg>
-                GitHub
               </a>
             </nav>
           </div>

@@ -498,6 +498,15 @@ textarea:focus {
 }
 .nav-box svg { width: 13px; height: 13px; flex-shrink: 0; }
 
+/* Icon-only nav box — square, centered icon, no text. */
+.nav-box-icon {
+  padding: 0;
+  width: 34px;
+  height: 34px;
+  justify-content: center;
+}
+.nav-box-icon svg { width: 15px; height: 15px; }
+
 /* Top status bar — sticky, instrument-feel. */
 .statusbar {
   background: rgba(8, 7, 10, 0.85);
