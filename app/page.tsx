@@ -31,7 +31,7 @@ export default function Home() {
                 </svg>
               </a>
               <a
-                href="https://x.com/tryhermesx402"
+                href="https://x.com/tryautoreason"
                 target="_blank"
                 rel="noreferrer"
                 className="nav-box nav-box-icon"
@@ -42,7 +42,7 @@ export default function Home() {
                 </svg>
               </a>
               <a
-                href="https://github.com/maxpaperclips/Autoreason"
+                href="https://github.com/maxpaperclips"
                 target="_blank"
                 rel="noreferrer"
                 className="nav-box nav-box-icon"
