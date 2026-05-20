@@ -9,9 +9,18 @@ export default function Home() {
         <div className="statusbar sticky top-0 z-30">
           <div className="flex items-center justify-between px-5 py-2.5 gap-4 flex-wrap">
             <div className="flex items-center gap-3">
-              <span className="text-copper">
-                <HermesMark size={20} />
-              </span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/autoreason-mark-2.png"
+                alt=""
+                style={{
+                  width: "24px",
+                  height: "24px",
+                  objectFit: "contain",
+                  display: "block",
+                }}
+                aria-hidden="true"
+              />
               <span className="mono text-[11px] tracking-[0.24em] uppercase text-copper">
                 Autoreason
               </span>

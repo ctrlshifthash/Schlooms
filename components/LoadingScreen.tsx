@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { HermesMark } from "@/components/HermesMark";
 
 const STATUS_LINES = [
   "Initializing tournament harness",
@@ -39,7 +38,18 @@ export default function LoadingScreen() {
         <div className="cd-eyebrow">Autoreason · tournament harness</div>
 
         <div className="cd-caduceus">
-          <HermesMark size={84} glow={false} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/autoreason-mark-2.png"
+            alt=""
+            style={{
+              width: "120px",
+              height: "120px",
+              objectFit: "contain",
+              display: "block",
+            }}
+            aria-hidden="true"
+          />
         </div>
 
         <h1 className="cd-wordmark" aria-label="Autoreason">
