@@ -24,7 +24,6 @@ export default function Home() {
               <span className="mono text-[11px] tracking-[0.24em] uppercase text-copper">
                 Autoreason
               </span>
-              <span className="mono text-[10px] text-fg-faint">live console</span>
             </div>
             <nav className="flex items-center gap-2 flex-wrap">
               <a
@@ -180,9 +179,6 @@ export default function Home() {
               </div>
               <div>
                 <div className="wordmark text-2xl text-copper">AUTOREASON</div>
-                <div className="mono text-[11px] text-fg-dim tracking-[0.18em] uppercase">
-                  live console
-                </div>
               </div>
             </div>
           </div>
