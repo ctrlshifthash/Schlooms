@@ -27,7 +27,7 @@ export default function Home() {
             </div>
             <nav className="flex items-center gap-2 flex-wrap">
               <a
-                href="https://pump.fun/coin/"
+                href="https://pump.fun/coin/9dd53LymR9JCEeLEPBJZAmetnUp5mrSkqqqJivhtpump"
                 target="_blank"
                 rel="noreferrer"
                 className="nav-box nav-box-icon"
