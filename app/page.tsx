@@ -135,23 +135,6 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <div className="flex flex-col gap-1.5 mono text-[11px] text-fg-dim">
-              <div>
-                <span className="text-fg-faint">method · </span>
-                <a
-                  href="https://github.com/NousResearch/autoreason"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-copper hover:text-copper-bright underline underline-offset-2"
-                >
-                  NousResearch/autoreason
-                </a>
-              </div>
-              <div>
-                <span className="text-fg-faint">authors · </span>
-                <span className="text-fg">SHL0MS · Hermes Agent</span>
-              </div>
-            </div>
           </div>
         </footer>
       </div>
