@@ -1,6 +1,6 @@
 # Schlooms
 
-Live, in-browser demo of the **autoreason** self-refinement tournament from
+Live, in-browser console for the **autoreason** self-refinement tournament from
 [NousResearch/autoreason](https://github.com/NousResearch/autoreason) (SHL0MS · Hermes Agent).
 You give it a writing/planning task; it runs the A/B/AB tournament for you
 with real LLM calls, streaming each phase as it happens.

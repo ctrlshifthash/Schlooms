@@ -143,7 +143,7 @@ export default function Home() {
               <div>
                 <div className="wordmark text-2xl text-copper">HERMES AGENT</div>
                 <div className="mono text-[11px] text-fg-dim tracking-[0.18em] uppercase">
-                  Schlooms · live autoreason demo
+                  Schlooms · autoreason console
                 </div>
               </div>
             </div>
