@@ -71,10 +71,7 @@ export default function Home() {
             </div>
 
             <p className="mt-9 mono text-[13px] leading-relaxed text-fg-dim max-w-3xl">
-              Method by{" "}
-              <span className="text-copper-bright">SHL0MS · Hermes Agent</span>{" "}
-              (Nous Research). Iterative self-refinement fails for three structural
-              reasons:{" "}
+              Iterative self-refinement fails for three structural reasons:{" "}
               <span className="text-fg">prompt bias</span> (models hallucinate
               flaws when asked to critique),{" "}
               <span className="text-fg">scope creep</span> (outputs expand
@@ -153,10 +150,6 @@ export default function Home() {
               <div>
                 <span className="text-fg-faint">authors · </span>
                 <span className="text-fg">SHL0MS · Hermes Agent</span>
-              </div>
-              <div>
-                <span className="text-fg-faint">inference · </span>
-                <span className="text-fg">OpenRouter, streamed</span>
               </div>
             </div>
           </div>
