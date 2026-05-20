@@ -165,7 +165,18 @@ export default function Home() {
           <div className="flex flex-wrap items-center justify-between gap-6">
             <div className="flex items-center gap-4">
               <div className="seal">
-                <HermesMark size={30} glow={false} />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/autoreason-mark-2.png"
+                  alt=""
+                  style={{
+                    width: "36px",
+                    height: "36px",
+                    objectFit: "contain",
+                    display: "block",
+                  }}
+                  aria-hidden="true"
+                />
               </div>
               <div>
                 <div className="wordmark text-2xl text-copper">AUTOREASON</div>
